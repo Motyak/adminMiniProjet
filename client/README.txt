@@ -1,6 +1,8 @@
 Après l'installation effectuée, la machine enverra toutes les 5 minutes des informations concernant son etat au serveur.
 
-Installation : sur la machine client, executer ./installation_client.sh
+Installation : 
+On suppose que la librairie psutil est déjà installée (sinon, faire 'sudo pip install psutil')
+sur la machine client, executer ./installation_client.sh
 
 Utilisation : (automatique)
 
