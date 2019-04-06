@@ -1,0 +1,121 @@
+I.
+3 premieres parties -> 1 seule machine
+minimum 3 sondes;sonde=script qui affiche une information
+au moins 1 sonde écrit en python et en shell/bash
+
+//faire une connexion client/serveur avec netcat, envoie d'un fichier avec données formatées
+	vers fichier sur serveur où les lignes sont traitées une à une puis supprimer lorsqu'elles ont
+	été écrite dans la bdd
+	
+Sur la machine serveur :
+//on ouvre un socket sur le port 55555 qui va écrire tout ce qui est envoyé dans le fichier output
+$nc -l 55555 > output
+//il attend le prochain fichier, lorsqu'il recoit un fichier, il ferme le socket
+//ajouter l'info du fichier dans la bdd puis supprimer le fichier
+//réouvrir le socket	(boucle)
+
+//shell script :
+while:
+do
+	nc -l 127.0.0.1 55555 > output
+	cat output	#traiter l'information
+done
+
+Sur la machine client :
+//on écrit dans un fichier les infos à envoyer
+//on se connecte au socket sur *adrServeur* port 55555, puis on envoie le fichier
+//on repete toutes les n minutes grace a cron (plannificateur de taches linux)
+//lancer le script serveur au démarrage de la machine serveur
+$crontab -e
+puis on tape : @reboot ~/serveur.sh
+//lancer le script client.sh toutes les 5 minutes
+$crontab -e
+puis on tape a la fin du fichier : */5 * * * * ~/client.sh
+//infos a enregistrer : idMachine,horodatage,%CPU,%RAM,%DISQUES,nbProcess,nbConnectedUsers
+//cpu load % :
+top -bn1 | grep load | awk '{printf "CPU Load: %s\n", $(NF-2)}' | sed 's/.$//'	//output : 0,13
+//memory usage :
+//free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'
+free -m | awk 'NR==2{printf "%s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'	//output : 2267/7861MB (28.84%)
+//disk usage :
+//df -h | awk '$NF=="/"{printf "Disk Usage: %d/%dGB (%s)\n", $3,$2,$5}'
+df -h | awk '$NF=="/"{printf "%d/%dGB (%s)\n", $3,$2,$5}'	//output : 106/459GB (25%)
+//nb de processus actif sur la machine (tout utilisateur confondu) :
+ps aux | wc -l	//output : 231
+//nb d'utilisateurs connectés :
+who | awk '{ print $1 }' | sort | uniq | wc -l	//output : 1
+
+//shell script :
+ifconfig eth0 | grep 'inet addr' | cut -d: -f2 | awk '{print $1}' > input
+date >> input
+top -bn1 | grep load | awk '{printf "%s\n", $(NF-2)}' | sed 's/.$//' >> input
+free -m | awk 'NR==2{printf "%s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }' >> input
+df -h | awk '$NF=="/"{printf "%d/%dGB (%s)\n", $3,$2,$5}' >> input
+ps aux | wc -l >> input
+who | awk '{ print $1 }' | sort | uniq | wc -l >> input
+nc 127.0.0.1 55555 < input
+
+
+
+
+II.
+moteur de stockage de données -> dans un fichier ou une base de données(bonus)
+On stocke sur une base de données sqlite3, 
+pour récupérer une info a partir d'une requete select:
+	o=$(sqlite3 bdd.db "select * from test;")
+pour insérer des infos :
+	sqlite3 bdd.db "insert into table(id) values (5);"
+Schéma relationnel de la bdd :
+	id(entier, auto-increment),ipMachine(chaine),date(chaine, format:AAAA/MM/JJ),
+	heure(chaine,format : HH:MM:SS),cpuPer(reel),ramPer(reel),disksUsage(reel),
+	nbProcess(reel), nbUsers(reel)
+EXTRACTION(id,machine,date,heure,type,info)
+TYPES_EXTRACTION(type)
+
+create table EXTRACTION(id integer primary key autoincrement,
+	machine text,date text,heure text,type text,info real);
+
+Les données trop anciennes doivent être supprimées :
+//lancer le script delete.sh tous les jours
+$crontab -e
+puis on tape a la fin du fichier : @daily ~/delete.sh
+
+//delete.sh
+dateLimite=($date +%Y/%m/%d -d "1 month ago")
+sqlite3 bdd.db "delete from EXTRACTION where date<'dateLimite'"
+
+Stocker la dernière alerte cert-fr dans la bdd :
+create table ALERTE(id integer primary key autoincrement,titre text,date text,heure text,lien text);
+
+Verifier si elle n'existe pas deja (req sql where nom=..), sinon ne pas la stocker
+
+
+
+III.
+récupérer contenu du site, quand y'a une nouvelle alerte, on l'ajoute
+à notre moteur de stockage de données
+Affichage : l'admin doit pouvoir voir les infos depuis une fenetre (terminal ou interface)
+Envoi d'alertes : On définit ce qu'est un état critique, lorsqu'on détecte un état critique, 
+	envoyer une alerte/mail à l'admin
+	
+IV.
+Ne peut etre réalisé que si les 3 d'avant sont OK
+Dupliquer les sondes sur les différentes machines du parc informatique,
+gérer connexions entre le serveur et les sondes sur les machines distantes
+
+
+_____________________________________________________
+
+
+
+Here's a one-liner that doesn't use/require the new job to be in a file:
+
+(crontab -l 2>/dev/null; echo "*/5 * * * * /path/to/job -with args") | crontab -
+
+The 2>/dev/null is important so that you don't get the no crontab for username message that some *nixes produce if there are currently no crontab entries.
+
+
+
+A FAIRE : 
+-lancer ~/serveur.sh au démarrage de la machine serveur
+-modélisation base de données et installation sqlite+creation bdd
