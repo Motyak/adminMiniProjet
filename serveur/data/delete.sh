@@ -1,5 +1,8 @@
 #!/bin/sh
 
+#installation directory absolute path
+readonly DRY="/usr/local/bin/miniProjet"
+
 #supprime toutes les extractions datant de plus d'un mois
 dateLimite=$(date +%Y/%m/%d -d "1 month ago")
-sqlite3 bdd.db < "delete from EXTRACTION where date<'dateLimite'";
+sqlite3 $DRY/bdd.db "delete from EXTRACTION where date<'dateLimite'";
