@@ -9,7 +9,11 @@ DRY='/usr/local/bin/miniProjet'
 
 LIMITE=95.0
 
-datetimeLimite=datetime.datetime.now()-datetime.timedelta(minutes=5)
+datetimeAuj=datetime.datetime.now()
+dateAuj=datetimeAuj.strftime("%Y/%m/%d")
+heureAuj=datetimeAuj.strftime("%H:%M:%S")
+
+datetimeLimite=datetimeAuj-datetime.timedelta(minutes=5)
 dateLimite=datetimeLimite.strftime("%Y/%m/%d")
 heureLimite=datetimeLimite.strftime("%H:%M:%S")
 
@@ -21,7 +25,7 @@ for row in res:
     cursor.execute("select count(machine) from CRISE where machine='"+row[0]+"' limit 1")
     #si la crise n'a pas deja ete enregistree
     if(cursor.fetchone()[0]==0):
-        cursor.execute('''insert into CRISE values(null,?,?,?)''',(row[0],'diskUsage',str(row[1])))
+        cursor.execute('''insert into CRISE values(null,?,?,?,?,?)''',(row[0],'diskUsage',str(row[1]),dateAuj,heureAuj))
         db.commit()
         os.system("python3 "+DRY+"/mail.py "+row[0]+" "+str(row[1]))
 db.close()

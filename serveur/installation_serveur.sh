@@ -19,7 +19,7 @@ echo "Creation de la base de données dans le repertoire d'installation..."
 sqlite3 $DRY/bdd.db <<req
 create table EXTRACTION(id integer primary key autoincrement,machine text,date text,heure text,type text,info real);
 create table ALERTE(id integer primary key autoincrement,titre text,date text,heure text,lien text);
-create table CRISE(id integer primary key autoincrement,machine text,type text,info real);
+create table CRISE(id integer primary key autoincrement,machine text,type text,info real,date text,heure text);
 req
 
 echo "Ajout des taches crontab..."
