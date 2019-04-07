@@ -19,6 +19,7 @@ echo "Creation de la base de données dans le repertoire d'installation..."
 sqlite3 $DRY/bdd.db <<req
 create table EXTRACTION(id integer primary key autoincrement,machine text,date text,heure text,type text,info real);
 create table ALERTE(id integer primary key autoincrement,titre text,date text,heure text,lien text);
+create table CRISE(id integer primary key autoincrement,machine text,type text,info real);
 req
 
 echo "Ajout des taches crontab..."
@@ -26,6 +27,7 @@ echo "Ajout des taches crontab..."
 (crontab -l 2>/dev/null; echo "@daily $DRY/delete.sh") | crontab -
 (crontab -l 2>/dev/null; echo "@daily python3 $DRY/webParser.py") | crontab -
 (crontab -l 2>/dev/null; echo "@weekly $DRY/backup.sh") | crontab -
+(crontab -l 2>/dev/null; echo "*/5 * * * * $DRY/detectionCrise.sh") | crontab -
 
 echo "Lancement du serveur..."
 $DRY/server.sh $IP_ADDR_SERVER $LISTENING_PORT &

@@ -1,16 +1,27 @@
 import sqlite3
 import datetime
+import os
 
-LIMITE='0.95'
+#situation de crise : si le disque dur principal d'une machine depasse les 95% d'utilisation
 
-datetimeLimite=datetime.datetime.now()-datetime.timedelta(minutes=30)
+#installation directory absolute path
+DRY='/usr/local/bin/miniProjet'
+
+LIMITE=95.0
+
+datetimeLimite=datetime.datetime.now()-datetime.timedelta(minutes=5)
 dateLimite=datetimeLimite.strftime("%Y/%m/%d")
 heureLimite=datetimeLimite.strftime("%H:%M:%S")
 
-db=sqlite3.connect('bdd.db')
+db=sqlite3.connect(DRY+'/bdd.db')
 cursor=db.cursor()
-#si une machine est en etat de crises pour une duree de plus de 30min, situation crise.
-#permet d'afficher le nombre d'extraction en etat crise parmi les 6(*3) dernieres extractions de chaque machine
-#machine|nbCrisesCpu|nbCrisesRam|nbCrisesDisk
-print("select machine,type,info from EXTRACTION where date>='"+dateLimite+"' and heure>='"+heureLimite+"' and (type=cpuUsage or type=memUsage or type=diskUsage) and info>'"+LIMITE+"' group by machine")
-
+res=cursor.execute('''select distinct machine,info from EXTRACTION where date>=? and heure>=? and type='diskUsage' and info>?''',(dateLimite,heureLimite,LIMITE))
+# Pour chaque entree de la list : envoyer mail de crise de type disk avec ip de la machine et pourcentage disk usage
+for row in res:
+    cursor.execute("select count(machine) from CRISE where machine='"+row[0]+"' limit 1")
+    #si la crise n'a pas deja ete enregistree
+    if(cursor.fetchone()[0]==0):
+        cursor.execute('''insert into CRISE values(null,?,?,?)''',(row[0],'diskUsage',str(row[1])))
+        db.commit()
+        os.system("python3 "+DRY+"/mail.py "+row[0]+" "+str(row[1]))
+db.close()
