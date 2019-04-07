@@ -12,8 +12,8 @@ sudo sh -c "mkdir $DRY && chown $(whoami):$(whoami) $DRY"
 mkdir $DRY/.backup
 
 echo "Copie des scripts dans le repertoire d'installation..."
-cp data/*.sh data/*.py $DRY/
-chmod -R u+x $DRY/*.sh $DRY/*.py
+cp data/*.sh data/*.py data/*.gp $DRY/
+chmod -R u+x $DRY/*.sh $DRY/*.py $DRY/*.gp
 
 echo "Creation de la base de données dans le repertoire d'installation..."
 sqlite3 $DRY/bdd.db <<req

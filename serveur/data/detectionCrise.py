@@ -14,12 +14,11 @@ dateAuj=datetimeAuj.strftime("%Y/%m/%d")
 heureAuj=datetimeAuj.strftime("%H:%M:%S")
 
 datetimeLimite=datetimeAuj-datetime.timedelta(minutes=5)
-dateLimite=datetimeLimite.strftime("%Y/%m/%d")
 heureLimite=datetimeLimite.strftime("%H:%M:%S")
 
 db=sqlite3.connect(DRY+'/bdd.db')
 cursor=db.cursor()
-res=cursor.execute('''select distinct machine,info from EXTRACTION where date>=? and heure>=? and type='diskUsage' and info>?''',(dateLimite,heureLimite,LIMITE))
+res=cursor.execute('''select distinct machine,info from EXTRACTION where heure>=? and type='diskUsage' and info>?''',(heureLimite,LIMITE))
 # Pour chaque entree de la list : envoyer mail de crise de type disk avec ip de la machine et pourcentage disk usage
 for row in res:
     cursor.execute("select count(machine) from CRISE where machine='"+row[0]+"' limit 1")
