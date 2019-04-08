@@ -19,7 +19,7 @@ read userInput
 machine=$(cat $DRY/.tmp | head -$userInput | tail -1)
 
 #Affiche historique de type 'cpu usage' de la machine datant de ces dernieres 24h
-echo $(sqlite3 $DRY/bdd.db "select heure,info from EXTRACTION where date>='$dateDebut' and type='cpuUsage' and machine='$machine'") > $DRY/.tmp
+sqlite3 $DRY/bdd.db "select heure,info from EXTRACTION where date>='$dateDebut' and type='cpuUsage' and machine='$machine'" > $DRY/.tmp
 $DRY/cpuUsage.gp
 #Affiche historique de type 'mem usage' de la machine datant de ces dernieres 24h
 sqlite3 $DRY/bdd.db "select heure,info from EXTRACTION where date>='$dateDebut' and type='memUsage' and machine='$machine'" > $DRY/.tmp
