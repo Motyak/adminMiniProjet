@@ -1,0 +1,16 @@
+#Ceci est un fichier de template dans lequel vous pouvez personnaliser le titre et le contenu du mail
+#Vous pouvez utilisez les macros suivantes dans votre texte:
+#'%type' : affiche le type de la mesure (ex:Processeur(%),Memoire vive(%),Disque dur(%))
+#'%val' : affiche la valeur de la mesure (ex:26.06)
+#'%ip' : affiche l'adresse IP de la machine concernee (ex:192.168.1.1)
+#'%date' : affiche la date de l'extraction (ex:4 mars 2019)
+#'%heure' : affiche l'heure de l'extraction (ex:15:45)
+
+titre:
+#Ecrivez le titre ci-dessous (sur 1 ligne)
+Crise de type %type detectée !
+
+contenu:
+#Ecrivez le contenu du mail ci-dessous (plusieurs lignes possibles)
+Une crise de type %type a été detectée le %data à %heure sur la machine %ip avec une valeur de %val%.
+Veuillez régler le problème au plus vite !
