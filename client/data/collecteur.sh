@@ -29,7 +29,7 @@ df -h | awk '$NF=="/"{printf "%s\n",$5}' | sed 's/.$//' >> $DRY/.input
 
 #nb of processes
 #ps aux | wc -l >> .input
-python2 s_nbProcesses.py >> $DRY/.input
+python3 s_nbProcesses.py >> $DRY/.input
 
 #nb of active users
 who | awk '{ print $1 }' | sort | uniq | wc -l >> $DRY/.input
